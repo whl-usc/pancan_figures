@@ -8,10 +8,13 @@ This Python script plots the distribution of normalized gene expression
 counts downloaded from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "2.0.0"
+__version__ = "2.1.1"
 
 # Version notes
 __update_notes__ = """
+2.1.1
+    -   Adjusted styling to match the dge_boxwhisker_multi script.
+
 2.1.0
     -   Relabeling y-axis for different normalization methods.
 
@@ -385,8 +388,6 @@ def plot(dataframe, gene_name, output_prefix='',
     ax.set_xlabel('', fontsize=8, fontweight='bold')
     ax.set_ylabel(f'Gene Expression',
         fontsize=8, fontweight='bold')
-    ax.set_title(f'{gene_name} Expression by Tissue Type', fontsize=12,
-        fontweight='bold')
 
     # Add counts to x-axis labels
     x_labels = filtered_df['tissue_type'].unique()
@@ -394,7 +395,7 @@ def plot(dataframe, gene_name, output_prefix='',
     ax.set_xticklabels([f"{label} (n={counts_dict.get(label, 0)})" 
         for label in x_labels], rotation=45, rotation_mode='anchor', 
             ha='right', fontsize=8)
-    ax.set_xlim(-0.50, num_tissues + 1.5)
+    ax.set_xlim(-0.50, num_tissues + 2.0)
 
     # Remove spines
     ax.spines['top'].set_visible(False)
@@ -449,20 +450,35 @@ def plot(dataframe, gene_name, output_prefix='',
                     backgroundcolor='none',
                     alpha=significance_annotations[significance]['alpha']
                 )
+                
+        # Add alternating background colors for every two samples
+        tissue_types = filtered_df['tissue_type'].unique()
+        num_tissues = len(tissue_types)
+        colors = ['lightgray', 'white']
 
-                # Calculate span of gray background
-                span_start = min(normal_index, tumor_index) - 0.5
-                span_end = max(normal_index, tumor_index) + 0.5
+        for i in range(0, num_tissues, 2):
+            start_idx = i - 0.5
+            end_idx = min(i + 1.5, num_tissues - 0.5)
+            color = colors[(i // 2) % 2]
+            ax.axvspan(
+                start_idx, 
+                end_idx, 
+                alpha=0.1, 
+                color=color,
+                zorder=-1
+            )
+                # # Calculate span of gray background
+                # span_start = min(normal_index, tumor_index) - 0.5
+                # span_end = max(normal_index, tumor_index) + 0.5
 
-                # Add gray background behind the annotation
-                ax.axvspan(
-                    span_start, 
-                    span_end, 
-                    alpha=0.05,
-                    edgecolor='black',
-                    linewidth=0.5, 
-                    facecolor='gray', 
-                    zorder=-1)
+                # # Add gray background behind the annotation
+                # ax.axvspan(
+                #     span_start, 
+                #     span_end, 
+                #     alpha=0.05,
+                #     linewidth=0.5, 
+                #     facecolor='gray', 
+                #     zorder=-1)
 
     # Add custom legend
     if exclude_other:
@@ -512,6 +528,9 @@ def plot(dataframe, gene_name, output_prefix='',
 
     time = str(datetime.now())[:-7]
     print(f"Plot saved as {output_file} on {time}.")
+
+###########################################################################
+# 2. argparse options
 
 def parse_args():
     """
@@ -653,7 +672,7 @@ def main(args):
 
     else:
         if not args.input_file or not args.gene_name:
-            parser.error('You must provide input_file and gene_name' \
+            print('You must provide input_file and gene_name' \
                 ' if csv-file is not provided.')
             sys.exit()
         input_file = args.input_file

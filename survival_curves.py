@@ -8,7 +8,7 @@ This Python script plots the survival curve data and determines the
 p-value and Log-rank test statistics for data retrieved from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "2.0.0"
+__version__ = "1.0.0"
 
 # Version notes
 __update_notes__ = """
@@ -110,11 +110,11 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
         for time in event_times:
             if time in survival_probs.index:
                 survival_prob = survival_probs.loc[time].values[0]
-                tick_length = 0.025
+                tick_length = 0.01
                 plt.vlines(time, ymin=survival_prob - tick_length, ymax=survival_prob + tick_length,
-                           color=color, linestyle='-', alpha=1, linewidth=0.5)
+                           color=color, linestyle='-', alpha=1, linewidth=1)
 
-    plt.figure(figsize=(4, 4))
+    plt.figure(figsize=(6, 6))
     
     high_group = data[data.iloc[:, 4] == 'high']
     low_group = data[data.iloc[:, 4] == 'low']
@@ -125,11 +125,11 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
 
     if plot_high:
         plot_group(high_group, 'High Expression', colors['high'])
-        high_line = mlines.Line2D([], [], color=colors['high'], linestyle='-', linewidth=1, label='High Expression')
+        high_line = mlines.Line2D([], [], color=colors['high'], linestyle='-', linewidth=2, label='High Expression')
     
     if plot_low:
         plot_group(low_group, 'Low Expression', colors['low'])
-        low_line = mlines.Line2D([], [], color=colors['low'], linestyle='-', linewidth=1, label='Low Expression')
+        low_line = mlines.Line2D([], [], color=colors['low'], linestyle='-', linewidth=2, label='Low Expression')
 
     if plot_low and plot_high:
         results = logrank_test(high_group['OS.time'], low_group['OS.time'],
@@ -153,20 +153,20 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
             f'High Expression (n={high_group.shape[0]})\n'
             f'Low Expression (n={low_group.shape[0]})'
         )
-        plt.legend(handles=[high_line, low_line], loc='upper right', frameon=False, fontsize='8', bbox_to_anchor=(1.0, 1.0))
+        plt.legend(handles=[high_line, low_line], loc='upper right', frameon=False, fontsize='8', bbox_to_anchor=(0.95, 1.0))
     else:
         legend_title = (
             f'\nHigh Expression (n={high_group.shape[0]})'
         )
-        plt.legend(handles=[high_line], loc='upper right', frameon=False, fontsize='8', bbox_to_anchor=(1.0, 1.0))
+        plt.legend(handles=[high_line], loc='upper right', frameon=False, fontsize='8', bbox_to_anchor=(0.95, 1.0))
 
     # Add custom text for legend
     plt.draw()
     legend_bbox = plt.gca().get_legend().get_window_extent().transformed(plt.gcf().transFigure.inverted())
-    plt.text(legend_bbox.x0 + 0.355, legend_bbox.y0 + 0.08,
+    plt.text(legend_bbox.x0 + 0.06, legend_bbox.y0 + 0.08,
              legend_title,
-             fontsize='8', linespacing=1.5,
-             verticalalignment='top', horizontalalignment='right',
+             fontsize='8', linespacing=1.15,
+             verticalalignment='top', horizontalalignment='left',
              transform=plt.gcf().transFigure)
 
     plt.tight_layout()
@@ -199,7 +199,7 @@ def plot_survival_map(data, filename):
     norm = Normalize(vmin=-1.5, vmax=1.5, clip=True)
 
     # Set up figure and axes
-    fig, ax = plt.subplots(figsize=(10, 3))
+    fig, ax = plt.subplots(figsize=(12, 3))
 
     # Plot scatter plot with color representing hazard ratio
     sns.scatterplot(
