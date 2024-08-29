@@ -112,9 +112,9 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
                 survival_prob = survival_probs.loc[time].values[0]
                 tick_length = 0.01
                 plt.vlines(time, ymin=survival_prob - tick_length, ymax=survival_prob + tick_length,
-                           color=color, linestyle='-', alpha=1, linewidth=1)
+                           color=color, linestyle='-', alpha=1, linewidth=0.75)
 
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(4, 4))
     
     high_group = data[data.iloc[:, 4] == 'high']
     low_group = data[data.iloc[:, 4] == 'low']
@@ -125,11 +125,11 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
 
     if plot_high:
         plot_group(high_group, 'High Expression', colors['high'])
-        high_line = mlines.Line2D([], [], color=colors['high'], linestyle='-', linewidth=2, label='High Expression')
+        high_line = mlines.Line2D([], [], color=colors['high'], linestyle='-', linewidth=1, label='High Expression')
     
     if plot_low:
         plot_group(low_group, 'Low Expression', colors['low'])
-        low_line = mlines.Line2D([], [], color=colors['low'], linestyle='-', linewidth=2, label='Low Expression')
+        low_line = mlines.Line2D([], [], color=colors['low'], linestyle='-', linewidth=1, label='Low Expression')
 
     if plot_low and plot_high:
         results = logrank_test(high_group['OS.time'], low_group['OS.time'],
@@ -165,13 +165,13 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
     legend_bbox = plt.gca().get_legend().get_window_extent().transformed(plt.gcf().transFigure.inverted())
     plt.text(legend_bbox.x0 + 0.06, legend_bbox.y0 + 0.08,
              legend_title,
-             fontsize='8', linespacing=1.15,
+             fontsize='8', linespacing=1,
              verticalalignment='top', horizontalalignment='left',
              transform=plt.gcf().transFigure)
 
     plt.tight_layout()
-    plt.savefig(f"{filename}.png", dpi=400)
-    plt.savefig(f"{filename}.svg", dpi=400)
+    plt.savefig(f"{filename}.png", dpi=400, bbox_inches='tight')
+    plt.savefig(f"{filename}.svg", dpi=400, bbox_inches='tight')
     plt.close()
 
     time = str(datetime.now())[:-7]
