@@ -9,10 +9,14 @@ expression counts downloaded from the UCSC Xena web platform.
 """
 
 # Define version
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 # Version notes
 __update_notes__ = """
+1.4.0
+    -   Replaced mean-based fold change for median based, in-line with other
+        figure computations.
+        
 1.3.0
     -   Updated the data comprehension to include adjusting for normalization.
     
@@ -114,20 +118,15 @@ def data_cleanup(dataframe, tissue_types, norm_source):
             tumor_original = (2**tumor_cleaned - 1)
         else:
             raise ValueError(f"Unknown normalization method: {norm_source}")
+        
+        # Calculate medians and log2 fold change
+        median_normal = np.median(normal_original) + 1
+        median_tumor = np.median(tumor_original) + 1
+        fold_change_log2 = np.log2(median_tumor / median_normal)
 
-        # Calculate means and log2 fold change
-        mean_normal = np.mean(normal_original)
-        mean_tumor = np.mean(tumor_original)
-
-        if mean_normal == 0 or mean_tumor == 0:
-            fold_change_log2 = np.nan
-            p_value = 1.0
-        else:
-            fold_change_log2 = np.log2(mean_tumor / mean_normal)
-
-            # Perform Mann-Whitney U test
-            _, p_value = mannwhitneyu(normal_original, tumor_original, 
-                alternative='two-sided')
+        # Perform Mann-Whitney U test
+        _, p_value = mannwhitneyu(normal_cleaned, tumor_cleaned, 
+            alternative='two-sided')
 
         # Calculate -log10(p-value)
         neg_log_p_value = -np.log10(p_value) if p_value <= 0.05 else 0
@@ -148,7 +147,7 @@ def data_cleanup(dataframe, tissue_types, norm_source):
 
     # Convert to DataFrame for plotting
     expression_data = pd.DataFrame(relative_expression, columns=['Tissue Type',
-        'Fold Change (log2)', 'Significance', 'Stars'])
+        'Fold Change (log2(x+1))', 'Significance', 'Stars'])
     expression_data = expression_data.set_index('Tissue Type')
 
     # Ensure x-axis values are categorical
@@ -159,7 +158,7 @@ def data_cleanup(dataframe, tissue_types, norm_source):
     # Define color map and norm for fold change
     cmap = plt.get_cmap('coolwarm')
     norm = Normalize(vmin=-5, vmax=5, clip=True)
-    
+
     return expression_data, cmap, norm
 
 def plot(expression_data, cmap, norm, output_file):
@@ -180,7 +179,7 @@ def plot(expression_data, cmap, norm, output_file):
     sns.scatterplot(
         x='Tissue Type',
         y=0,
-        hue='Fold Change (log2)',
+        hue='Fold Change (log2(x+1))',
         palette=cmap,
         data=expression_data,
         s=600,
@@ -197,7 +196,7 @@ def plot(expression_data, cmap, norm, output_file):
         orientation='vertical', 
         fraction=0.005, 
         pad=0)
-    cbar.set_label('Fold Change (log2)')
+    cbar.set_label('Fold Change (log2(x+1))')
 
     # Annotate significance stars above each marker
     for index, row in expression_data.iterrows():

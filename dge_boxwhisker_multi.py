@@ -9,10 +9,13 @@ between up to three genes by plotting and performing significance tests.
 """
 
 # Define version
-__version__ = "1.3.0"
+__version__ = "2.0.1"
 
 # Version notes
 __update_notes__ = """
+2.0.1
+    -   Fixed y-axis labeling issue.
+
 2.0.0
     -   Extended the script to handle up to four input datasets.
     -   Revised significance star placement to be staggered at the top.
@@ -125,7 +128,8 @@ def plot(dataframe1, dataframe2, dataframe3=None, dataframe4=None,
     )
 
     ax.set_xlabel('', fontsize=8, fontweight='bold')
-    ax.set_ylabel('Gene Expression', fontsize=8, fontweight='bold')
+    ax.set_ylabel(f'Gene Expression (log2(norm_count+1))',
+        fontsize=8, fontweight='bold')
 
     # Get tissue types for x-axis labels
     tissue_types = df['tissue_type'].unique()

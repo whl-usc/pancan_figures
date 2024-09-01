@@ -8,10 +8,13 @@ This Python script plots the distribution of normalized gene expression
 counts downloaded from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "2.1.1"
+__version__ = "2.1.2"
 
 # Version notes
 __update_notes__ = """
+2.1.2
+    -   Fixed y-axis naming issue.
+
 2.1.1
     -   Adjusted styling to match the dge_boxwhisker_multi script.
 
@@ -386,7 +389,7 @@ def plot(dataframe, gene_name, output_prefix='',
 
     # Plot labels and title for figure
     ax.set_xlabel('', fontsize=8, fontweight='bold')
-    ax.set_ylabel(f'Gene Expression',
+    ax.set_ylabel(f'Gene Expression (log2(norm_count+1))',
         fontsize=8, fontweight='bold')
 
     # Add counts to x-axis labels
