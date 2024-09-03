@@ -9,10 +9,13 @@ between up to three genes by plotting and performing significance tests.
 """
 
 # Define version
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 # Version notes
 __update_notes__ = """
+2.0.2
+    -   Organized the x-axis by alphabetical order to address changes
+        enacted in the naming scheme from previous script. 
 2.0.1
     -   Fixed y-axis labeling issue.
 
@@ -76,7 +79,6 @@ def read_input(file_path1, file_path2, file_path3=None, file_path4=None, placeho
             filter_tumor_columns(data3), 
             filter_tumor_columns(data4))
 
-
 def plot(dataframe1, dataframe2, dataframe3=None, dataframe4=None, 
          gene1_name=None, gene2_name=None, gene3_name=None, gene4_name=None, 
          placeholder_value=-9999):
@@ -132,7 +134,7 @@ def plot(dataframe1, dataframe2, dataframe3=None, dataframe4=None,
         fontsize=8, fontweight='bold')
 
     # Get tissue types for x-axis labels
-    tissue_types = df['tissue_type'].unique()
+    tissue_types = sorted(df['tissue_type'].unique())
     x_labels = []
     for tissue_type in tissue_types:
         counts = [

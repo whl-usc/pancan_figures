@@ -9,10 +9,13 @@ expression counts downloaded from the UCSC Xena web platform.
 """
 
 # Define version
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 # Version notes
 __update_notes__ = """
+1.5.0
+    -   Edited script to address color mapping normalization issue.
+
 1.4.0
     -   Replaced mean-based fold change for median based, in-line with other
         figure computations.
@@ -38,7 +41,7 @@ __update_notes__ = """
 
 # Import Packages
 from datetime import datetime
-from matplotlib.colors import Normalize
+from matplotlib.colors import TwoSlopeNorm
 from scipy.stats import mannwhitneyu
 import argparse
 import matplotlib.pyplot as plt
@@ -78,6 +81,7 @@ def read_input(file_path):
         print(f"Warning: These tissue types have '0' values exceeding 50% of"
             "total counts:")
         print(zero_counts_df)
+        print("")
 
     return data
 
@@ -114,16 +118,19 @@ def data_cleanup(dataframe, tissue_types, norm_source):
             normal_original = (2**normal_cleaned - 0.001)
             tumor_original = (2**tumor_cleaned - 0.001)
         elif norm_source == "RSEM":
-            normal_original = (2**normal_cleaned - 1)
-            tumor_original = (2**tumor_cleaned - 1)
+            normal_original = ((2**normal_cleaned) - 1)
+            tumor_original = ((2**tumor_cleaned) - 1)
         else:
             raise ValueError(f"Unknown normalization method: {norm_source}")
         
         # Calculate medians and log2 fold change
-        median_normal = np.median(normal_original) + 1
-        median_tumor = np.median(tumor_original) + 1
+        median_normal = np.median(normal_original + 1)
+        median_tumor = np.median(tumor_original + 1)
         fold_change_log2 = np.log2(median_tumor / median_normal)
 
+        # Check median values and compare.
+        print(f"{tissue_type}: Normal {median_normal} and Tumor {median_tumor}")
+        print(f"{fold_change_log2}")
         # Perform Mann-Whitney U test
         _, p_value = mannwhitneyu(normal_cleaned, tumor_cleaned, 
             alternative='two-sided')
@@ -157,7 +164,7 @@ def data_cleanup(dataframe, tissue_types, norm_source):
 
     # Define color map and norm for fold change
     cmap = plt.get_cmap('coolwarm')
-    norm = Normalize(vmin=-5, vmax=5, clip=True)
+    norm = TwoSlopeNorm(vmin=-2, vcenter=0, vmax=2)
 
     return expression_data, cmap, norm
 
@@ -181,6 +188,7 @@ def plot(expression_data, cmap, norm, output_file):
         y=0,
         hue='Fold Change (log2(x+1))',
         palette=cmap,
+        hue_norm=norm,
         data=expression_data,
         s=600,
         marker='s',
@@ -238,6 +246,7 @@ def plot(expression_data, cmap, norm, output_file):
     plt.show()
 
     time = str(datetime.now())[:-7]
+    print("")
     print(f"Plot saved as {output_file} on {time}.")
 
 def parse_args():
@@ -273,7 +282,7 @@ NOTE: The input and output strings are positional.
         help='Normalization method used on the raw data. "RSEM" or "TPM".')
     parser.add_argument(
         '-o', '--output', type=str, 
-        default='significance.png',
+        default='significance',
         help='Filename for saving the plot (default: "significance.png").')
 
     return parser.parse_args()
@@ -287,9 +296,9 @@ def main(args):
     """
     tissue_types = [
         'Adrenal Gland', 'Bile Duct', 'Bladder', 'Brain', 'Breast',
-        'Cervix', 'Colon', 'Esophagus', 'Head And Neck', 'Kidney',
+        'Cervix', 'Colon', 'Esophagus', 'Gastric', 'Head And Neck', 'Kidney',
         'Liver', 'Lung', 'Ovary', 'Pancreas', 'Prostate', 'Rectum',
-        'Skin', 'Stomach', 'Testis', 'Thyroid', 'Uterus'
+        'Skin', 'Testis', 'Thyroid', 'Uterus'
     ]
 
     input_file = args.file_path

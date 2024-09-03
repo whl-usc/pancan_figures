@@ -12,6 +12,9 @@ __version__ = "2.1.2"
 
 # Version notes
 __update_notes__ = """
+2.1.3
+    -   Renamed "Stomach" to "Gastric" tissues for styling.
+
 2.1.2
     -   Fixed y-axis naming issue.
 
@@ -723,7 +726,9 @@ def main(args):
             'Cervix Normal' : 'Cervix Normal 1',
             'Head And Neck Region Normal': 'Head And Neck Normal',
             'Head And Neck Region Tumor': 'Head And Neck Tumor',
-            'Thyroid Gland Tumor': 'Thyroid Tumor'
+            'Thyroid Gland Tumor': 'Thyroid Tumor',
+            'Stomach Normal' : 'Gastric Normal', 
+            'Stomach Tumor' : 'Gastric Tumor'
         }, inplace=True)
 
         # Data cleanup - concatenating same tissue types 
