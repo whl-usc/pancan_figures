@@ -8,10 +8,13 @@ This Python script plots the survival curve data and determines the
 p-value and Log-rank test statistics for data retrieved from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "1.0.0"
+__version__ = "3.0.0"
 
 # Version notes
 __update_notes__ = """
+3.0.0
+    -   Adjust survival mapping colors, compares low relative to high expression.
+
 2.0.0
     -   Added plotting survival curve function.
 
@@ -24,6 +27,7 @@ from datetime import datetime
 from lifelines import KaplanMeierFitter, CoxPHFitter
 from lifelines.statistics import logrank_test
 from matplotlib.colors import Normalize
+from matplotlib.colors import TwoSlopeNorm
 import argparse
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
@@ -72,12 +76,12 @@ def calculate_hazard_ratios(data):
     cph = CoxPHFitter()
     
     try:
-        cph.fit(data_encoded[['OS.time', 'OS', 'median_group_high']], duration_col='OS.time', event_col='OS')
+        cph.fit(data_encoded[['OS.time', 'OS', 'median_group_low']], duration_col='OS.time', event_col='OS')
         summary = cph.summary
         
         # Extract hazard ratios and p-values
-        hazard_ratio = summary.loc['median_group_high', 'exp(coef)']
-        hr_p_values = summary.loc['median_group_high', 'p']
+        hazard_ratio = summary.loc['median_group_low', 'exp(coef)']
+        hr_p_values = summary.loc['median_group_low', 'p']
         
     except KeyError as e:
         print(f"Error fitting the model: {e}")
@@ -183,42 +187,44 @@ def plot_survival_map(data, filename):
 
     Args:
         data (pd.DataFrame): DataFrame containing survival data with columns
-                             'cancer', 'hazard_ratio', and 'p-value'.
+                             'cancer_type', 'hazard_ratio', and 'p_value'.
         filename (str): Output file name for the plot.
     """
     data['cancer_type'] = data['cancer_type'].str.upper()
 
-    # Calculate -log10(p-value) and assign significance stars
+    # Log-transform the hazard ratio and assign significance stars
     data['log_hazard_ratio'] = np.log10(data['hazard_ratio'])
     data['significance'] = data['p_value'].apply(
         lambda p: '***' if p <= 0.001 else '**' if p <= 0.01 else '*' if p <= 0.05 else ''
     )
 
-    # Define color map and normalization for hazard ratio
+    # Define colormap and centered normalization for hazard ratio
     cmap = plt.get_cmap('coolwarm')
-    norm = Normalize(vmin=-1.5, vmax=1.5, clip=True)
+    norm = TwoSlopeNorm(vmin=-1, vcenter=0, vmax=1)
 
     # Set up figure and axes
     fig, ax = plt.subplots(figsize=(12, 3))
 
-    # Plot scatter plot with color representing hazard ratio
-    sns.scatterplot(
-        x='cancer_type',
-        y=0,
-        hue='hazard_ratio',
-        palette=cmap,
-        data=data,
-        s=600,
+    # Use matplotlib scatterplot instead of seaborn to handle norm
+    scatter = ax.scatter(
+        x=range(len(data['cancer_type'])),  # X-coordinates for each cancer type
+        y=[0] * len(data['cancer_type']),  # Y-coordinate is 0 for all points
+        c=data['log_hazard_ratio'],  # Color by log hazard ratio
+        cmap=cmap,
+        norm=norm,
+        s=600,  # Size of markers
         marker='s',
-        edgecolor=None,
-        legend=None,
-        ax=ax
+        edgecolor=None
     )
 
     # Add color bar for hazard ratio
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
     cbar = plt.colorbar(sm, ax=ax, orientation='vertical', fraction=0.005, pad=0)
-    cbar.set_label('Hazard Ratio (HR)')
+    cbar.set_label('Log$_{10}$ Hazard Ratio')
+
+    cbar.set_ticks([-1, 0, 1])
+    cbar.set_ticklabels(['-1', '0', '1'])
 
     # Annotate significance stars above each marker
     for index, row in data.iterrows():
@@ -232,7 +238,7 @@ def plot_survival_map(data, filename):
             color='black'
         )
 
-    # Plot labels and title for the figure
+    # Set x-tick labels with cancer type names
     ax.set_xlabel('Cancer Type')
     ax.set_ylabel('log$_{10}$(HR)')
     ax.set_ylim(-0.2, 0.2)
@@ -255,7 +261,7 @@ def plot_survival_map(data, filename):
     # Save and show plot
     plt.savefig(f"{filename}.png", dpi=400)
     plt.savefig(f"{filename}.svg", dpi=400)
-    plt.show()
+    plt.close()
 
     time = str(datetime.now())[:-7]
     print(f"Plot saved as {filename} on {time}.")
