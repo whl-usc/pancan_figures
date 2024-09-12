@@ -118,7 +118,7 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
                 plt.vlines(time, ymin=survival_prob - tick_length, ymax=survival_prob + tick_length,
                            color=color, linestyle='-', alpha=1, linewidth=0.75)
 
-    plt.figure(figsize=(4, 4))
+    plt.figure(figsize=(3.5, 3.5))
     
     high_group = data[data.iloc[:, 4] == 'high']
     low_group = data[data.iloc[:, 4] == 'low']
@@ -148,12 +148,12 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
     plt.xlim(left=0)
     plt.ylim(bottom=0)
     plt.xlabel('Days')
-    plt.ylabel('Percent Survival')
+    plt.ylabel('Survival Probability')
 
     if plot_low:
         legend_title = (
             f'Log-rank (p={p_value:.4f})\n'
-            f'HR: {hazard_ratio:.2f} (p={hr_p_values:.4f})\n'
+            f'HR: {hazard_ratio:.2f} (p={hr_p_values:.4e})\n'
             f'High Expression (n={high_group.shape[0]})\n'
             f'Low Expression (n={low_group.shape[0]})'
         )
@@ -174,7 +174,7 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
              transform=plt.gcf().transFigure)
 
     plt.tight_layout()
-    plt.savefig(f"{filename}.png", dpi=400, bbox_inches='tight')
+    # plt.savefig(f"{filename}.png", dpi=400, bbox_inches='tight')
     plt.savefig(f"{filename}.svg", dpi=400, bbox_inches='tight')
     plt.close()
 
@@ -323,3 +323,4 @@ def main(args):
 if __name__ == "__main__":
     args = parse_args()
     main(args)
+
