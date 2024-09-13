@@ -55,7 +55,7 @@ def read_input(file_path):
 
 def calculate_hazard_ratios(data):
     """
-    Calculate Hazard Ratios using Cox Proportional-Hazards Model, ensuring 'high' is always compared to 'low'.
+    Calculate Hazard Ratios using Cox Proportional-Hazards Model, ensuring 'low' is compared to 'high'.
 
     Args:
         data (pd.DataFrame): DataFrame containing survival and gene expression data.
