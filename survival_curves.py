@@ -97,7 +97,7 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
         data (pd.DataFrame): DataFrame containing survival and gene expression data.
     """
     kmf = KaplanMeierFitter()
-    colors = {'high': 'red', 'low': 'blue'}
+    colors = {'high': 'blue', 'low': 'red'}
 
     def plot_group(group, label, color):
         kmf.fit(group['OS.time'], event_observed=group['OS'])
@@ -174,7 +174,7 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
              transform=plt.gcf().transFigure)
 
     plt.tight_layout()
-    plt.savefig(f"{filename}.png", dpi=400, bbox_inches='tight')
+    # plt.savefig(f"{filename}.png", dpi=400, bbox_inches='tight')
     plt.savefig(f"{filename}.svg", dpi=400, bbox_inches='tight')
     plt.close()
 
