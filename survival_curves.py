@@ -55,7 +55,7 @@ def read_input(file_path):
 
 def calculate_hazard_ratios(data):
     """
-    Calculate Hazard Ratios using Cox Proportional-Hazards Model, ensuring 'low' is compared to 'high'.
+    Calculate Hazard Ratios using Cox Proportional-Hazards Model, ensuring 'high' is always compared to 'low'.
 
     Args:
         data (pd.DataFrame): DataFrame containing survival and gene expression data.
@@ -118,7 +118,7 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
                 plt.vlines(time, ymin=survival_prob - tick_length, ymax=survival_prob + tick_length,
                            color=color, linestyle='-', alpha=1, linewidth=0.75)
 
-    plt.figure(figsize=(3.5, 3.5))
+    plt.figure(figsize=(4, 4))
     
     high_group = data[data.iloc[:, 4] == 'high']
     low_group = data[data.iloc[:, 4] == 'low']
@@ -152,7 +152,7 @@ def plot_kaplan_meier_curve(data, hazard_ratio, hr_p_values, filename):
 
     if plot_low:
         legend_title = (
-            f'Log-rank (p={p_value:.4f})\n'
+            f'Log-rank (p={p_value:.4e})\n'
             f'HR: {hazard_ratio:.2f} (p={hr_p_values:.4e})\n'
             f'High Expression (n={high_group.shape[0]})\n'
             f'Low Expression (n={low_group.shape[0]})'
