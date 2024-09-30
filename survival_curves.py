@@ -8,10 +8,14 @@ This Python script plots the survival curve data and determines the
 p-value and Log-rank test statistics for data retrieved from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 
 # Version notes
 __update_notes__ = """
+3.1.0
+    -   Retained the original high relative to low expression calculation.
+    -   Keep the switched survival mapping colors (red for low, blue for high).
+
 3.0.0
     -   Adjust survival mapping colors, compares low relative to high expression.
 
@@ -76,12 +80,12 @@ def calculate_hazard_ratios(data):
     cph = CoxPHFitter()
     
     try:
-        cph.fit(data_encoded[['OS.time', 'OS', 'median_group_low']], duration_col='OS.time', event_col='OS')
+        cph.fit(data_encoded[['OS.time', 'OS', 'median_group_high']], duration_col='OS.time', event_col='OS')
         summary = cph.summary
         
         # Extract hazard ratios and p-values
-        hazard_ratio = summary.loc['median_group_low', 'exp(coef)']
-        hr_p_values = summary.loc['median_group_low', 'p']
+        hazard_ratio = summary.loc['median_group_high', 'exp(coef)']
+        hr_p_values = summary.loc['median_group_high', 'p']
         
     except KeyError as e:
         print(f"Error fitting the model: {e}")
