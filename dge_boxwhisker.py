@@ -8,7 +8,7 @@ This Python script plots the distribution of normalized gene expression
 counts downloaded from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 
 # Version notes
 __update_notes__ = """
