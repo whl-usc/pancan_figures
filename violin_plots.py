@@ -100,7 +100,16 @@ def violinplot(data, filename):
         # Drop NaN values and set x_col
         x_col = 'histological_type'
         data_cleaned = data.dropna(subset=['histological_type', 'GLP1R'])
-        stage_order = sorted(data_cleaned[x_col].unique())
+        
+        # Define the custom order for histological types
+        custom_histological_order = ['Oligodendroglioma', 'Oligoastrocytoma', 'Astrocytoma']
+        
+        # Filter out histological types that exist in the data
+        available_types = sorted(data_cleaned[x_col].unique())
+        
+        # Create the stage order based on custom order if present, otherwise default to available types
+        stage_order = [histotype for histotype in custom_histological_order if histotype in available_types]
+        stage_order.extend([histotype for histotype in available_types if histotype not in custom_histological_order])
 
     if data_cleaned is not None:
         # Drop any remaining NaN values for the chosen x_col and 'GLP1R'
@@ -127,6 +136,7 @@ def violinplot(data, filename):
             group1_data = data_cleaned[data_cleaned[x_col] == unique_stages[idx1]]['GLP1R']
             group2_data = data_cleaned[data_cleaned[x_col] == unique_stages[idx2]]['GLP1R']
             u_stat, p_value_mw = stats.mannwhitneyu(group1_data, group2_data, alternative='two-sided')
+            print(f"Comparison between {unique_stages[idx1]} and {unique_stages[idx2]}: U-Statistic = {u_stat}, p-value = {p_value_mw}")
             pairwise_results.append((unique_stages[idx1], unique_stages[idx2], p_value_mw))
 
         # Apply Bonferroni correction
@@ -244,11 +254,3 @@ if __name__ == "__main__":
     args = parse_args()
     main(args)
 
-
-#!/bin/bash
-
-# Loop through all .tsv files in the current directory.
-for file in *.tsv; do
-    echo "Processing $file"
-    python3 violin_plots.py "$file"
-done
