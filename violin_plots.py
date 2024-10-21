@@ -8,10 +8,14 @@ This Python script plots the pathological stage data and determines the
 Kruskal-Wallis and Mann-Whitney U tests for data retrieved from the UCSC Xena web platform.
 """
 # Define version
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 # Version notes
 __update_notes__ = """
+2.0.2
+    -   Fixed the order of histological types for LGG subtypes to be: 
+        Oligodendroglioma, Oligoastrocytoma, Astrocytoma
+
 2.0.1
     -   Removed statannotations and replaced it with manual significance annotations.
     -   Kruskal-Wallis and Mann-Whitney U tests for pairwise comparisons still included.
@@ -236,7 +240,7 @@ def parse_args():
     parser.add_argument(
         'file_path', type=str,
         help='Path to the TSV file containing pathologic stage and gene expression.')
-    
+
     return parser.parse_args()
 
 def main(args):
